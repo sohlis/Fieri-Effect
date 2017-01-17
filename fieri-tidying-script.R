@@ -26,3 +26,4 @@ yelp_reviews <- yelp_reviews %>% select(-text, -votes_cool, - votes_funny, -vote
 #Merge reviews and business data sets into one data frame
 df_yelp <- left_join(yelp_reviews, yelp_tbl, by = "business_id")
 
+#example of github
