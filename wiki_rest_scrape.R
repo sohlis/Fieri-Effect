@@ -68,7 +68,8 @@ flavor.town <- rbind(season1, season2, season3, season4, season5, season6, seaso
                      season23, season24)
 
 flavor.town <- as.data.frame(flavor.town, header = TRUE)
+flavor.town$Episode <- as.numeric(flavor.town$Episode)
 
-write.table(flavor.town, file = "flavor_town.csv") 
+write.csv(flavor.town, file = "flavor_town.csv", row.names = FALSE) 
 
 
