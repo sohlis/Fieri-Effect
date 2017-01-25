@@ -1,5 +1,6 @@
 #Scraping list of restaurant names from DDD's wikipedia page
 library(htmltab)
+library(dplyr)
 
 url <- "https://en.wikipedia.org/wiki/List_of_Diners,_Drive-Ins,_and_Dives_episodes"
 
@@ -72,4 +73,19 @@ flavor.town$Episode <- as.numeric(flavor.town$Episode)
 
 write.csv(flavor.town, file = "flavor_town.csv", row.names = FALSE) 
 
+##Create a dataframe that combines the strings for restaurants and location to make a list
+#that will be passed to a scraper to find all the necessary URLs for Yelp Scraper
+
+combined.info <- flavor.town %>% select(Restaurant, Location)
+combined.info <- na.omit(combined.info)
+
+combined.info$Location <- gsub(',', "", combined.info$Location)
+
+combined.info$rest.loc <- paste(combined.info$Restaurant, combined.info$Location, sep = " ")
+combined.info$rest.loc <- paste(combined.info$rest.loc, "yelp", sep = " ")
+
+#create a new dataframe that only contains the information needed to pass to the scraper
+data.for.url.scraper <- as.character(combined.info$rest.loc)
+
+write.csv(data.for.url.scraper, file = "data_for_url_scraper.csv", row.names = FALSE)
 
