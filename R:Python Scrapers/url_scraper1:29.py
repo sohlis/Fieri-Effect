@@ -3,46 +3,42 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import os
 import urllib
-import mechanize
 import re
 import csv
+import requests
+
 
 #Set working directory to where csv file is located
 os.chdir("/Users/gerikillo/Desktop/Effect_url_list")
-
-#path for my local machine :os.chdir("/Users/buchman/Documents/rproject/Fieri-Effect")
 
 #Read in csv file of restaurant names
 with open('data_for_url_scraper.csv', 'rb') as f:
    reader = csv.reader(f)
    your_list = map(tuple, reader)
-   #your_list = list(reader)
 
-#Make sure google knows we are chill bros and not robots
-br = mechanize.Browser()
-br.set_handle_robots(False)
-br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
-#br.addheaders= [('User-agent', 'chrome')]
+your_list1 = your_list
 
-your_list1 = your_list[40:70]
 
 list_of_urls = []
 list_of_names = []
 
+print("Working on your stupid ass query...")
 
 for item in your_list1:
     test_term = str(item)
     
-    test_term_final = test_term.replace("('", "").replace("',)", "").replace("(\"","").replace("\",)","")                                                                                                                                                                  
-
-    term = test_term_final.replace(" ", "+")
+    test_term_final = test_term.replace("('", "").replace("',)", "").replace("(\"","").replace("\",)","").replace("\\","").replace("x92xa9","e")                                                                                                                                                     
     
+    term = test_term_final.replace(" ", "+").replace("x8ax97xc8","\'").replace("xe4xf3xf1","")      
+
     encoded = urllib.quote(term)
 
     query = "http://www.google.com/search?q="+encoded
+ 
+    requestsinfo = requests.get(query)
 
-    htmltext = br.open(query).read()
-    
+    htmltext = requestsinfo.content
+
     soup = BeautifulSoup(htmltext, "html.parser")
 
     search = soup.findAll('div',attrs={'id':'search'})
@@ -56,19 +52,34 @@ for item in your_list1:
     soup1 = BeautifulSoup(searchtext, "html.parser")
     list_items = soup1.findAll('a')
 
-#check for errors
+#check for errors and makes sure the link contains 'yelp.com/biz/'
     try:
-        source_url = str(re.findall(pattern, str(list_items[0])))
+        for x in range(0,10):
+            source_url = str(re.findall(pattern, str(list_items[x])))
+            if 'yelp.com/biz/' in source_url:
+                source_url = str(re.findall(pattern, str(list_items[x])))
+                break
+            else:
+                continue
+
+        source_url_final = source_url.replace("['q=", "").replace("&amp']", "")
+        list_of_urls.append(source_url_final)
+        list_of_names.append(test_term_final)
+
     except:
         source_url = "No URL Found"
         pass
-    
+
+
+
     source_url_final = source_url.replace("['q=", "").replace("&amp']", "")
-    
+    print(source_url_final)
+
+
+
 #make dank lists
     list_of_urls.append(source_url_final)
     list_of_names.append(test_term_final)
-    print(source_url_final)
 
 
 #create a dictionary with the name and url
